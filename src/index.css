@@ -3,6 +3,11 @@
   box-sizing: border-box;
 }
 
+:root {
+  --swiper-navigation-size: 24px;
+  --swiper-theme-color: white;
+}
+
 html::-webkit-scrollbar {
   display: none;
 }
@@ -325,7 +330,7 @@ button {
 
 .swiper-container {
   min-height: 225px;
-  height: 23vw;
+  height: 42vh; 
 }
 
 .swiper-pagination-bullet-active {

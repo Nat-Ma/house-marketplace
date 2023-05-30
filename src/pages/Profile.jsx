@@ -1,11 +1,28 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { getAuth, updateProfile, updateEmail } from 'firebase/auth'
-import { doc, updateDoc } from 'firebase/firestore'
+import {
+    updateDoc,
+    doc,
+    collection,
+    getDocs,
+    query,
+    where,
+    orderBy,
+    deleteDoc,
+  } from 'firebase/firestore'
 import { db } from '../firebase.config'
 import { toast } from 'react-toastify'
+import arrowRight from '../assets/svg/keyboardArrowRightIcon.svg'
+import homeIcon from '../assets/svg/homeIcon.svg'
+import Spinner from '../components/Spinner'
+import ListingItem from '../components/ListingItem'
 
 const Profile = () => {
+    const [listings, setListings] = useState(null)
+    const [loading, setLoading] = useState(true)
+
     const auth = getAuth()
     const [changeDetails, setChangeDetails] = useState(false)
 
@@ -17,6 +34,30 @@ const Profile = () => {
     const { name, email } = formData
 
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const fetchUserListings = async () => {
+            const listingsRef = collection(db, 'listings')
+
+            const q = query(listingsRef, where('userRef', '==', `${auth.currentUser.uid}`), orderBy('timestamp', 'desc'))
+
+            const querySnapshot = await getDocs(q)
+
+            let listings = []
+
+            querySnapshot.forEach(doc => {
+                listings.push({
+                    id: doc.id,
+                    data: doc.data(),
+                })
+            })
+
+            setListings(listings)
+            setLoading(false)
+        }
+
+        fetchUserListings()
+    }, [auth.currentUser.uid])
 
     const onLogout = () => {
         auth.signOut()
@@ -45,6 +86,22 @@ const Profile = () => {
         }))
     }
 
+    const onDelete = async (id) => {
+        if (window.confirm('Sure?')) {
+            await deleteDoc(doc(db, 'listings', id))
+            setListings(listings.filter(listing => listing.id !== id))
+            toast.success('Sucessfully deleted item!')
+        }
+    }
+
+    const onEdit = async (id) => {
+        navigate(`/edit-listing/${id}`)
+    }
+
+    if(loading) {
+        return <Spinner />
+    }
+
 
     return (
         <div className="profile">
@@ -68,6 +125,18 @@ const Profile = () => {
                         <input type="text" id="email" className={!changeDetails ? 'profileEmail' : 'profileEmailActive'} disabled={!changeDetails} value={email} onChange={onChange}/>
                     </form>
                 </div>
+
+                <Link to="/create-listing" className="createListing">
+                    <img src={homeIcon} alt="home" />    
+                    <p>Sell or rent your home</p>
+                    <img src={arrowRight} alt="arrow right" />
+                </Link>
+
+                {!loading && listings?.length > 0 && (
+                    listings.map(({ data, id }) => (
+                        <ListingItem key={id} listing={data} id={id} onDelete={() => onDelete(id)} onEdit={() => onEdit(id)} />
+                    ))
+                )}
             </main>
         </div>
     )
