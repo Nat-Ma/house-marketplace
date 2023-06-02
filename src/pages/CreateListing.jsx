@@ -13,7 +13,6 @@ const CreateListing = () => {
     const _isMounted = useRef(true)
     const auth = getAuth()
 
-    const [geolocationEnabled, setGeolocationEnabled] = useState(true)
     const [loading, setLoading] = useState(true)
     const [formData, setFormData] = useState({
         type: "rent",
@@ -23,7 +22,7 @@ const CreateListing = () => {
         furnished: false,
         lat: 0,
         lng: 0,
-        imageUrls: {},
+        imgUrls: {},
         location: "",
         name: "",
         offer: false,
@@ -36,10 +35,8 @@ const CreateListing = () => {
         bathrooms, 
         bedrooms, 
         discountedPrice, 
-        furnished, 
-        lat, 
-        lng, 
-        imageUrls,
+        furnished,  
+        imgUrls,
         location, 
         name, 
         offer, 
@@ -59,6 +56,7 @@ const CreateListing = () => {
             })
         }
         return () => _isMounted.current = false
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [_isMounted])
 
     const onSubmit = async (e) => {
@@ -71,7 +69,7 @@ const CreateListing = () => {
             return
         }
 
-        if (imageUrls.length > 6) {
+        if (imgUrls.length > 6) {
             setLoading(false)
             toast.error('You cannot upload more than 6 images.')
             return
@@ -115,8 +113,8 @@ const CreateListing = () => {
             })
         }
 
-        const imgUrls = await Promise.all(
-            [...imageUrls].map((image) => storeImage(image))
+        const newImgUrls = await Promise.all(
+            [...imgUrls].map((image) => storeImage(image))
         ).catch(() => {
             setLoading(false)
             toast.error('Images not uploaded.')
@@ -125,11 +123,10 @@ const CreateListing = () => {
 
         const formDataCopy = {
             ...formData,
-            imgUrls,
+            imgUrls: [...newImgUrls],
             timestamp: serverTimestamp(),
         }
     
-        delete formDataCopy.images
         delete formDataCopy.address
         !formDataCopy.offer && delete formDataCopy.discountedPrice
     
@@ -159,7 +156,7 @@ const CreateListing = () => {
         if(e.target.files) {
             setFormData(prev => ({
                 ...prev,
-                imageUrls: e.target.files
+                imgUrls: e.target.files
             }))
         }
     }
@@ -295,33 +292,6 @@ const CreateListing = () => {
                         required
                     />
 
-                    {!geolocationEnabled && (
-                        <div className='formLatLng flex'>
-                        <div>
-                          <label htmlFor="lat" className='formLabel'>Latitude</label>
-                          <input
-                            className='formInputSmall'
-                            type='number'
-                            id='lat'
-                            value={lat}
-                            onChange={onMutate}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="lng" className='formLabel'>Longitude</label>
-                          <input
-                            className='formInputSmall'
-                            type='number'
-                            id='lng'
-                            value={lng}
-                            onChange={onMutate}
-                            required
-                          />
-                        </div>
-                      </div>
-                    )}
-
                     <label htmlFor="offer" className='formLabel'>Offer</label>
                     <div className='formButtons'>
                         <button
@@ -377,14 +347,14 @@ const CreateListing = () => {
                         </>
                     )}
 
-                    <label htmlFor="imageUrls" className='formLabel'>Images</label>
+                    <label htmlFor="imgUrls" className='formLabel'>Images</label>
                     <p className='imagesInfo'>
                         The first image will be the cover (max 6).
                     </p>
                     <input
                         className='formInputFile'
                         type='file'
-                        id='imageUrls'
+                        id='imgUrls'
                         onChange={onMutate}
                         max='6'
                         accept='.jpg,.png,.jpeg'

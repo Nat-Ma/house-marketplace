@@ -21,7 +21,7 @@ const EditListing = () => {
         type: "rent",
         bathrooms: 1,
         bedrooms: 1,
-        discountePrice: 0,
+        discountedPrice: 0,
         furnished: false,
         lat: 0,
         lng: 0,
@@ -57,16 +57,20 @@ const EditListing = () => {
                 } 
             })
         }
+
         return () => _isMounted.current = false
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [_isMounted])
 
+    console.log('1 set user ref outside', formData)
+
     // redirect if listing is not from user
-    // useEffect(() => {
-    //     if(listing?.userRef !== auth.currentUser.uid) {
-    //         toast.error('You cannot edit this listing.')
-    //         navigate('/')
-    //     }
-    // }) 
+    useEffect(() => {
+        if(listing && listing.userRef !== auth.currentUser.uid) {
+            toast.error('You cannot edit this listing.')
+            navigate('/')
+        }
+    }) 
 
     // fetch listing to edit
     useEffect(() => {
@@ -87,8 +91,6 @@ const EditListing = () => {
 
         fetchListing()
     }, [params.listingId, navigate])
-
-    console.log(formData)
 
     const onSubmit = async (e) => {
         e.preventDefault()
@@ -145,7 +147,12 @@ const EditListing = () => {
         }
 
         const newImgUrls = await Promise.all(
-            [...imgUrls].map((image) => storeImage(image))
+            [...imgUrls].map((image) => {
+                if (typeof(image) === 'string') {
+                    return image
+                }
+                return storeImage(image)
+            })
         ).catch(() => {
             setLoading(false)
             toast.error('Images not uploaded.')
@@ -154,12 +161,9 @@ const EditListing = () => {
 
         const formDataCopy = {
             ...formData,
-            imgUrls: [...formData.imgUrls, ...newImgUrls],
+            imgUrls: [...newImgUrls],
             timestamp: serverTimestamp(),
         }
-
-        console.log(formData)
-        console.log('copy', formDataCopy)
     
         delete formDataCopy.address
         !formDataCopy.offer && delete formDataCopy.discountedPrice
@@ -192,7 +196,7 @@ const EditListing = () => {
         if(e.target.files) {
             setFormData(prev => ({
                 ...prev,
-                imgUrls: e.target.files
+                imgUrls: [...imgUrls, ...e.target.files]
             }))
         }
     }
