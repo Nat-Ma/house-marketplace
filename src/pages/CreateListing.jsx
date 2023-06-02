@@ -18,7 +18,7 @@ const CreateListing = () => {
         type: "rent",
         bathrooms: 1,
         bedrooms: 1,
-        discountePrice: 0,
+        discountedPrice: 0,
         furnished: false,
         lat: 0,
         lng: 0,
@@ -50,9 +50,6 @@ const CreateListing = () => {
                     setFormData({ ...formData, userRef: user.uid })
                     setLoading(false)
                 } 
-                // else {
-                //     navigate("/sign-in")
-                // }
             })
         }
         return () => _isMounted.current = false

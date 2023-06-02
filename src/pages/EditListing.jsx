@@ -62,8 +62,6 @@ const EditListing = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [_isMounted])
 
-    console.log('1 set user ref outside', formData)
-
     // redirect if listing is not from user
     useEffect(() => {
         if(listing && listing.userRef !== auth.currentUser.uid) {
