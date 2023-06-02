@@ -46,6 +46,8 @@ const Slider = () => {
     <>
         <p className='exploreHeading'>Recommended</p>
         <swiper-container
+            observeParents="true"
+            observer="true"
             navigation="true" 
             pagination="true"
             slides-per-view="1"
