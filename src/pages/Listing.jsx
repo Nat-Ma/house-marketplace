@@ -57,8 +57,6 @@ const Listing = () => {
             {shareLinkCopied && <p className="linkCopied">Link Copied</p>}
 
             <swiper-container
-                observeParents="true"
-                observer="true"
                 navigation="true" 
                 pagination="true"
                 slides-per-view="1"
